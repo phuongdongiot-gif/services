@@ -15,7 +15,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@core-bds/shared-core": ["libs/shared-core/src/index.ts"]
+      "@core-bds/shared-core": ["libs/shared-core/src/index.ts"],
+      "@core-bds/shared-database": ["libs/shared-database/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
