@@ -1,0 +1,22 @@
+# Bất Động Sản Microservices (Nx + NestJS + GraphQL)
+
+- [x] Phase 1: Môi trường & Core Nx Workspace
+  - [x] Khởi tạo Nx workspace tại thư mục `bds`.
+  - [x] Cài đặt gói `@nx/nest`, `@nestjs/graphql`, và Apollo (Federation).
+  - [x] Tạo shared library `shared-core`.
+- [/] Phase 2: Core Services (Identity & Access)
+  - [ ] Tạo ứng dụng `auth-service`.
+  - [ ] Tạo ứng dụng `user-service`.
+- [ ] Phase 3: BĐS Core Services (Sản phẩm & Tồn kho)
+  - [ ] Tạo ứng dụng `project-service`.
+  - [ ] Tạo ứng dụng `inventory-service`.
+  - [ ] Tạo ứng dụng `media-service`.
+- [ ] Phase 4: Transaction Services (Giao dịch)
+  - [ ] Tạo ứng dụng `booking-service`.
+  - [ ] Tạo ứng dụng `payment-service`.
+- [ ] Phase 5: Hỗ trợ & Khách hàng
+  - [ ] Tạo ứng dụng `notification-service`.
+  - [ ] Tạo ứng dụng `crm-service`.
+  - [ ] Tạo ứng dụng `search-service`.
+- [ ] Phase 6: API Gateway & Tích hợp
+  - [ ] Tạo ứng dụng `api-gateway` làm GraphQL Federation Router.

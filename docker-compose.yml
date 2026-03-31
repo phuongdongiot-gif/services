@@ -1,0 +1,208 @@
+version: '3.8'
+
+services:
+  # ======== DATABASE & INFRASTRUCTURE ========
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: bds_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - bds_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d bds_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - bds_net
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - bds_net
+
+  # ======== API GATEWAY (Public Facing) ========
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - APP=api-gateway
+    ports:
+      - "3000:3000" # Mở cổng 3000 cho bên ngoài (React/Mobile App kết nối vào)
+    environment:
+      - PORT=3000
+    depends_on:
+      - auth-service
+      - user-service
+      - project-service
+      - inventory-service
+      - media-service
+      - booking-service
+      - payment-service
+      - notification-service
+      - crm-service
+      - search-service
+    networks:
+      - bds_net
+
+  # ======== MICROSERVICES ========
+  # Các port bên trong chỉ dùng để gọi nhau thông qua service name. Không push port ra ngoài máy host.
+
+  auth-service:
+    build:
+      context: .
+      args:
+        - APP=auth-service
+    environment:
+      - PORT=3001
+      - DB_HOST=postgres
+      - REDIS_HOST=redis
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bds_net
+
+  user-service:
+    build:
+      context: .
+      args:
+        - APP=user-service
+    environment:
+      - PORT=3002
+      - DB_HOST=postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bds_net
+
+  project-service:
+    build:
+      context: .
+      args:
+        - APP=project-service
+    environment:
+      - PORT=3003
+      - DB_HOST=postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bds_net
+
+  inventory-service:
+    build:
+      context: .
+      args:
+        - APP=inventory-service
+    environment:
+      - PORT=3004
+      - DB_HOST=postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bds_net
+
+  media-service:
+    build:
+      context: .
+      args:
+        - APP=media-service
+    environment:
+      - PORT=3005
+    networks:
+      - bds_net
+
+  booking-service:
+    build:
+      context: .
+      args:
+        - APP=booking-service
+    environment:
+      - PORT=3006
+      - DB_HOST=postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bds_net
+
+  payment-service:
+    build:
+      context: .
+      args:
+        - APP=payment-service
+    environment:
+      - PORT=3007
+      - DB_HOST=postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bds_net
+
+  notification-service:
+    build:
+      context: .
+      args:
+        - APP=notification-service
+    environment:
+      - PORT=3008
+      - REDIS_HOST=redis
+    networks:
+      - bds_net
+
+  crm-service:
+    build:
+      context: .
+      args:
+        - APP=crm-service
+    environment:
+      - PORT=3009
+      - DB_HOST=postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bds_net
+
+  search-service:
+    build:
+      context: .
+      args:
+        - APP=search-service
+    environment:
+      - PORT=3010
+      - ELASTICSEARCH_HOST=elasticsearch:9200
+    networks:
+      - bds_net
+
+volumes:
+  postgres_data:
+  es_data:
+
+networks:
+  bds_net:
+    driver: bridge
